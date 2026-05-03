@@ -1,0 +1,242 @@
+id,question,category,difficulty,gold_success,baseline_success,baseline_match,baseline_latency,agent_success,agent_match,agent_latency,agent_attempts,baseline_sql,agent_sql
+q001,What are the top 5 most viewed items overall?,top_n,1,True,True,True,18.996,True,True,17.868,1,"SELECT i.item_id, COUNT(*) AS view_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type = 'view'
+GROUP BY i.item_id
+ORDER BY view_count DESC
+LIMIT 5;","SELECT i.item_id, COUNT(*) AS view_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type = 'view'
+GROUP BY i.item_id
+ORDER BY view_count DESC
+LIMIT 5;"
+q002,How many transactions happened last month?,aggregate_time,1,True,True,True,11.496,True,True,11.091,1,"SELECT COUNT(*) AS txn_count
+FROM fact_events
+WHERE event_type = 'transaction'
+  AND event_time >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+  AND event_time < date_trunc('month', CURRENT_DATE);","SELECT COUNT(*) AS txn_count
+FROM fact_events
+WHERE event_type = 'transaction'
+  AND event_time >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+  AND event_time < date_trunc('month', CURRENT_DATE) LIMIT 100;"
+q003,What is the total number of views per month over the last 6 months?,trend,2,True,True,True,15.162,True,True,14.119,1,"SELECT 
+    date_trunc('month', e.event_time) AS month,
+    COUNT(*) AS view_count
+FROM 
+    fact_events e
+WHERE 
+    e.event_type = 'view'
+AND 
+    e.event_time >= CURRENT_DATE - INTERVAL '6 months'
+GROUP BY 
+    month
+ORDER BY 
+    month;","SELECT 
+    date_trunc('month', e.event_time) AS month,
+    COUNT(*) AS view_count
+FROM 
+    fact_events e
+WHERE 
+    e.event_type = 'view'
+AND 
+    e.event_time >= CURRENT_DATE - INTERVAL '6 months'
+GROUP BY 
+    month
+ORDER BY 
+    month LIMIT 100;"
+q004,How many unique visitors viewed any item last week?,aggregate_time,2,True,True,True,15.467,True,True,14.044,1,"SELECT 
+    COUNT(DISTINCT e.visitor_id) AS visitor_count
+FROM 
+    fact_events e
+WHERE 
+    e.event_type = 'view' 
+    AND e.event_time >= date_trunc('week', CURRENT_DATE - INTERVAL '1 week') 
+    AND e.event_time <  date_trunc('week', CURRENT_DATE);","SELECT COUNT(DISTINCT e.visitor_id) AS visitor_count 
+FROM fact_events e 
+WHERE e.event_type = 'view' 
+  AND e.event_time >= date_trunc('week', CURRENT_DATE - INTERVAL '1 week') 
+  AND e.event_time < date_trunc('week', CURRENT_DATE) LIMIT 100;"
+q005,Which 10 items had the most transactions last month?,top_n,2,True,True,True,18.528,True,True,18.458,1,"SELECT i.item_id, COUNT(*) AS transaction_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type = 'transaction'
+AND e.event_time >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+AND e.event_time <  date_trunc('month', CURRENT_DATE)
+GROUP BY i.item_id
+ORDER BY transaction_count DESC
+LIMIT 10;","SELECT i.item_id, COUNT(*) AS transaction_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type = 'transaction'
+AND e.event_time >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+AND e.event_time <  date_trunc('month', CURRENT_DATE)
+GROUP BY i.item_id
+ORDER BY transaction_count DESC
+LIMIT 10;"
+q006,What is the total number of events recorded in the dataset?,aggregate,1,True,True,True,5.069,True,True,4.607,1,"SELECT COUNT(*) AS total_events 
+FROM fact_events;","SELECT COUNT(*) AS total_events
+FROM fact_events LIMIT 100;"
+q007,How many distinct visitors have made at least one transaction?,aggregate,1,True,True,True,7.652,True,True,6.630,1,"SELECT COUNT(DISTINCT visitor_id) AS visitor_count 
+FROM fact_events 
+WHERE event_type = 'transaction';","SELECT COUNT(DISTINCT visitor_id) AS visitor_count 
+FROM fact_events 
+WHERE event_type = 'transaction' LIMIT 100;"
+q008,What is the number of transactions per week for the last 8 weeks?,trend,2,True,True,True,14.799,True,True,14.555,1,"SELECT 
+    date_trunc('week', e.event_time) AS week,
+    COUNT(*) AS txn_count
+FROM 
+    fact_events e
+WHERE 
+    e.event_type = 'transaction'
+    AND e.event_time >= CURRENT_DATE - INTERVAL '8 weeks'
+GROUP BY 
+    week
+ORDER BY 
+    week;","SELECT 
+    date_trunc('week', e.event_time) AS week,
+    COUNT(*) AS txn_count
+FROM 
+    fact_events e
+WHERE 
+    e.event_type = 'transaction'
+    AND e.event_time >= CURRENT_DATE - INTERVAL '8 weeks'
+GROUP BY 
+    week
+ORDER BY 
+    week LIMIT 100;"
+q009,What is the number of views per day over the last 7 days?,trend,2,True,True,True,15.490,True,True,15.108,1,"SELECT 
+    date_trunc('day', e.event_time) AS day,
+    COUNT(*) AS view_count
+FROM 
+    fact_events e
+WHERE 
+    e.event_type = 'view'
+AND 
+    e.event_time >= CURRENT_DATE - INTERVAL '7 days'
+GROUP BY 
+    day
+ORDER BY 
+    day;","SELECT 
+    date_trunc('day', e.event_time) AS day,
+    COUNT(*) AS view_count
+FROM 
+    fact_events e
+WHERE 
+    e.event_type = 'view'
+AND 
+    e.event_time >= CURRENT_DATE - INTERVAL '7 days'
+GROUP BY 
+    day
+ORDER BY 
+    day LIMIT 100;"
+q010,What is the average price of items that have at least one transaction?,aggregate_join,2,True,True,False,23.436,True,False,22.271,1,"SELECT AVG(i.price) AS avg_price
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE EXISTS (
+  SELECT 1
+  FROM fact_events f2
+  WHERE f2.event_type = 'transaction'
+    AND f2.item_id = e.item_id
+)
+GROUP BY i.item_id;","SELECT AVG(i.price) AS avg_price
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE EXISTS (
+  SELECT 1
+  FROM fact_events f2
+  WHERE f2.item_id = e.item_id
+    AND f2.event_type = 'transaction'
+)
+GROUP BY i.item_id LIMIT 100;"
+q011,How many items have been viewed but never purchased?,set_diff,3,True,True,False,25.693,True,False,25.464,1,"SELECT 
+    i.item_id, 
+    COUNT(*) AS view_count
+FROM 
+    fact_events e
+JOIN 
+    dim_item i ON e.item_id = i.item_id
+WHERE 
+    e.event_type = 'view'
+AND NOT EXISTS (
+    SELECT 1
+    FROM fact_events f2
+    WHERE f2.item_id = e.item_id
+    AND f2.event_type = 'transaction'
+)
+GROUP BY 
+    i.item_id","SELECT 
+    i.item_id, 
+    COUNT(*) AS view_count
+FROM 
+    fact_events e
+JOIN 
+    dim_item i ON e.item_id = i.item_id
+WHERE 
+    e.event_type = 'view'
+AND NOT EXISTS (
+    SELECT 1
+    FROM fact_events f2
+    WHERE f2.item_id = e.item_id
+    AND f2.event_type = 'transaction'
+)
+GROUP BY 
+    i.item_id LIMIT 100;"
+q012,How many visitors generated more than 10 events in total?,aggregate_cte,2,True,True,False,10.025,True,False,8.853,1,"SELECT COUNT(DISTINCT visitor_id) AS num_visitors
+FROM fact_events
+WHERE event_time <= CURRENT_DATE
+GROUP BY visitor_id
+HAVING COUNT(*) > 10;","SELECT COUNT(DISTINCT visitor_id) AS num_visitors
+FROM fact_events
+WHERE event_time <= CURRENT_DATE
+GROUP BY visitor_id
+HAVING COUNT(*) > 10 LIMIT 100;"
+q013,What are the top 5 items by add-to-cart events overall?,top_n,2,True,True,True,17.646,True,True,17.859,1,"SELECT i.item_id, COUNT(*) AS addtocart_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type = 'addtocart'
+GROUP BY i.item_id
+ORDER BY addtocart_count DESC
+LIMIT 5;","SELECT i.item_id, COUNT(*) AS addtocart_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type = 'addtocart'
+GROUP BY i.item_id
+ORDER BY addtocart_count DESC
+LIMIT 5;"
+q014,What is the overall conversion rate from views to transactions?,ratio,3,True,True,True,15.722,True,True,14.246,1,"SELECT 
+    COUNT(*) AS view_count,
+    (COUNT(*) * 1.0 / (
+        SELECT COUNT(*) 
+        FROM fact_events e2 
+        WHERE e2.event_type = 'view'
+    )) AS conversion_rate
+FROM 
+    fact_events
+WHERE 
+    event_type = 'transaction';","SELECT 
+    COUNT(*) AS view_count,
+    (COUNT(*) * 1.0 / (
+        SELECT COUNT(*) 
+        FROM fact_events e2 
+        WHERE e2.event_type = 'view'
+    )) AS conversion_rate
+FROM 
+    fact_events e1
+WHERE 
+    e1.event_type = 'transaction' LIMIT 100;"
+q015,Which items had at least one view and at least one transaction in the last month?,join_complex,3,True,True,True,15.141,True,True,26.930,1,"SELECT i.item_id 
+FROM fact_events e 
+JOIN dim_item i ON e.item_id = i.item_id 
+WHERE e.event_type IN ('view', 'transaction') 
+AND date_trunc('month', e.event_time) >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month') 
+GROUP BY i.item_id","SELECT i.item_id, COUNT(*) AS view_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type IN ('view', 'transaction')
+AND e.event_time >= date_trunc('month', CURRENT_DATE - INTERVAL '1 month')
+AND e.event_time <  date_trunc('month', CURRENT_DATE)
+GROUP BY i.item_id
+HAVING COUNT(DISTINCT CASE WHEN e.event_type = 'view' THEN 1 ELSE NULL END) > 0
+   AND COUNT(DISTINCT CASE WHEN e.event_type = 'transaction' THEN 1 ELSE NULL END) > 0 LIMIT 100;"

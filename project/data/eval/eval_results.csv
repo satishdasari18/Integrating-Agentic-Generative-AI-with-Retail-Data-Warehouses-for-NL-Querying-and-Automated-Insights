@@ -1,0 +1,39 @@
+id,question,category,difficulty,gold_success,baseline_success,baseline_match,baseline_latency,agent_success,agent_match,agent_latency,agent_attempts,baseline_sql,agent_sql
+q001,What are the top 5 most viewed items overall?,top_n,1,True,True,True,28.006,True,True,17.301,1,"SELECT i.item_id, COUNT(*) AS view_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type = 'view'
+GROUP BY i.item_id
+ORDER BY view_count DESC
+LIMIT 5;","SELECT i.item_id, COUNT(*) AS view_count
+FROM fact_events e
+JOIN dim_item i ON e.item_id = i.item_id
+WHERE e.event_type = 'view'
+GROUP BY i.item_id
+ORDER BY view_count DESC
+LIMIT 5;"
+q002,How many transactions happened last month?,aggregate_time,1,True,True,True,10.194,True,True,9.903,1,"SELECT COUNT(*) AS transaction_count 
+FROM fact_events 
+WHERE event_time >= (SELECT date_trunc('month', CURRENT_DATE) - INTERVAL '1 month') 
+AND event_time < (SELECT date_trunc('month', CURRENT_DATE));","SELECT COUNT(*) AS transaction_count 
+FROM fact_events 
+WHERE event_time >= (SELECT date_trunc('month', CURRENT_DATE) - INTERVAL '1 month') 
+AND event_time < (SELECT date_trunc('month', CURRENT_DATE)) LIMIT 100;"
+q003,What is the total number of views per month over the last 6 months?,trend,2,True,False,False,12.221,False,False,68.793,0,"SELECT 
+    d.month, 
+    COUNT(*) AS view_count
+FROM 
+    fact_events e
+JOIN 
+    dim_item i ON e.item_id = i.item_id
+WHERE 
+    e.event_type = 'view'
+GROUP BY 
+    d.month
+ORDER BY 
+    d.month ASC",
+q004,How many unique visitors viewed any item last week?,aggregate_time,2,True,False,False,25.220,False,False,87.407,0,"SELECT COUNT(DISTINCT visitor_id) AS visitor_count 
+FROM fact_events 
+WHERE event_time >= (SELECT date_id FROM dim_time WHERE week = (SELECT week FROM dim_time WHERE date_id = CURRENT_DATE - INTERVAL '7 day') AND year = (SELECT year FROM dim_time WHERE date_id = CURRENT_DATE - INTERVAL '7 day')) 
+AND event_time < (SELECT date_id FROM dim_time WHERE week = (SELECT week FROM dim_time WHERE date_id = CURRENT_DATE) AND year = (SELECT year FROM dim_time WHERE date_id = CURRENT_DATE)) 
+AND event_type = 'view';",
