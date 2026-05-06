@@ -1,4 +1,4 @@
-# Integrating Agentic Generative AI with Retail Data Warehouses for Natural Language Querying and Automated Insights
+# Integrating Agentic Generative AI with Retail Data Warehouses for NL Querying and Automated Insights
 
 
 
@@ -6,7 +6,7 @@
 
 ## 📖 Overview
 
-This repository contains the implementation of an **agentic generative AI framework** for natural language to SQL (NL2SQL) querying over a retail data warehouse. The system enables non-technical retail professionals to query complex PostgreSQL databases using plain English, with automatic SQL generation, execution-guided refinement, and business-oriented narrative explanations.
+This repository contains the implementation of an agentic generative AI framework for natural language to SQL (NL2SQL) querying over a retail data warehouse. The system enables non-technical retail professionals to query complex PostgreSQL databases using plain English, with automatic SQL generation, execution-guided refinement, and business-oriented narrative explanations.
 
 **Key Features:**
 - Schema-aware LLM prompting for accurate SQL generation
